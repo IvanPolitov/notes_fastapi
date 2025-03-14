@@ -1,9 +1,8 @@
 from fastapi import FastAPI
 
-from notes_app.routers.notes import notes_router
-
-from auth_app.routers.auth import auth_router
-from auth_app.routers.users import users_router
+from routers.notes import notes_router
+from routers.auth import auth_router
+from routers.users import users_router
 
 from database.database import engine, Base
 

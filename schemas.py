@@ -1,6 +1,23 @@
 from pydantic import BaseModel, EmailStr
 
 
+class NoteBase(BaseModel):
+    title: str
+    content: str
+
+
+class NoteCreate(NoteBase):
+    pass
+
+
+class NoteResponse(NoteCreate):
+    id: int
+    owner_id: int
+
+    class Config:
+        orm_model = True
+
+
 class UserBase(BaseModel):
     email: EmailStr
     username: str
