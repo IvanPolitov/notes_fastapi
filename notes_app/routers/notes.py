@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from notes_app.database import get_db
+from database.database import get_db
 from notes_app import models, schemas
 
 notes_router = APIRouter(
@@ -16,7 +16,10 @@ def get_notes(db: Session = Depends(get_db)):
 
 
 @notes_router.get('/{note_id}', response_model=schemas.NoteResponse)
-def get_note(note_id: int, db: Session = Depends(get_db)):
+def get_note(
+    note_id: int,
+    db: Session = Depends(get_db),
+):
     note = db.query(models.Note).filter(models.Note.id == note_id).first()
     if note:
         return note
