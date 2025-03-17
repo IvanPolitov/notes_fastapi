@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from database.database import get_db
 
-from schemas import UserCreate, Token, UserResponse
+from schemas import UserCreate, UserResponse
 from models import User
 from utils.auth import create_access_token, ACCESS_TOKEN_EXPIRE_MINUTES
 

@@ -1,18 +1,33 @@
+from typing import List
 from pydantic import BaseModel, EmailStr
+
+
+class TagBase(BaseModel):
+    name: str
+
+
+class TagResponse(TagBase):
+    id: int
+
+
+class TagCreate(TagBase):
+    pass
 
 
 class NoteBase(BaseModel):
     title: str
     content: str
+    tags: List[str] = []
 
 
 class NoteCreate(NoteBase):
     pass
 
 
-class NoteResponse(NoteCreate):
+class NoteResponse(NoteBase):
     id: int
     owner_id: int
+    tags: List[TagResponse]
 
     class Config:
         orm_model = True

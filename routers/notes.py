@@ -1,11 +1,12 @@
-from typing import List
+from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from utils.auth import get_current_user
 from database.database import get_db
-from models import User, Note
+from models import Tag, User, Note
 from schemas import NoteResponse, NoteCreate
+from utils.tags import process_tags
 
 notes_router = APIRouter(
     tags=['notes'],
@@ -15,10 +16,18 @@ notes_router = APIRouter(
 
 @notes_router.get('', response_model=List[NoteResponse])
 def get_notes(
+    tag: Optional[str] = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    return db.query(Note).filter(Note.owner_id == current_user.id).all()
+
+    query = db.query(Note).filter(
+        Note.owner_id == current_user.id)
+
+    if tag:
+        query = query.join(Note.tags).filter(Tag.name == tag)
+
+    return query.all()
 
 
 @notes_router.get('/{note_id}', response_model=NoteResponse)
@@ -36,9 +45,20 @@ def get_note(
 
 
 @notes_router.post('', response_model=NoteResponse)
-def post_note(note: NoteCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def post_note(
+    note: NoteCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+
+    tags = process_tags(db, note.tags)
+    note.tags = process_tags(db, note.tags)
     new_note = Note(
-        **note.model_dump(), owner_id=current_user.id)
+        title=note.title,
+        content=note.content,
+        owner_id=current_user.id,
+        tags=tags
+    )
     db.add(new_note)
     db.commit()
     db.refresh(new_note)
@@ -46,7 +66,12 @@ def post_note(note: NoteCreate, db: Session = Depends(get_db), current_user: Use
 
 
 @notes_router.put('/{note_id}', response_model=NoteResponse)
-def update_note(note_id: int, updated_note: NoteCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def update_note(
+    note_id: int,
+    updated_note: NoteCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     note = db.query(Note).filter(
         (Note.id == note_id) & (Note.owner_id == current_user.id)).first()
     if note:
@@ -59,7 +84,11 @@ def update_note(note_id: int, updated_note: NoteCreate, db: Session = Depends(ge
 
 
 @notes_router.delete('/{note_id}')
-def delete_note(note_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+def delete_note(
+    note_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     note = db.query(Note).filter(
         (Note.id == note_id) & (Note.owner_id == current_user.id)).first()
     if note:
