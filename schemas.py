@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 from pydantic import BaseModel, EmailStr
 
@@ -28,6 +29,7 @@ class NoteResponse(NoteBase):
     id: int
     owner_id: int
     tags: List[TagResponse]
+    created_date: datetime
 
     class Config:
         orm_model = True

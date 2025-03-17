@@ -1,6 +1,10 @@
 from typing import List
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Text, Table
+from sqlalchemy import (
+    Boolean, Column, ForeignKey, Integer, String, Text, Table, DateTime
+)
+from sqlalchemy.sql import func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from datetime import datetime
 from database.database import Base
 
 
@@ -22,6 +26,8 @@ class Note(Base):
     tags: Mapped[List['Tag']] = relationship(
         secondary=note_tag_association, back_populates='notes')
     owner: Mapped["User"] = relationship(back_populates="notes")
+    created_date: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now())
 
 
 class User(Base):
