@@ -1,10 +1,12 @@
 from fastapi import FastAPI
 
+
 from routers.notes import notes_router
 from routers.auth import auth_router
 from routers.users import users_router
 
 from database.database import engine, Base
+
 
 Base.metadata.create_all(bind=engine)
 

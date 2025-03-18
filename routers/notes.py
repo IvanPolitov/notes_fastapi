@@ -1,5 +1,6 @@
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from utils.auth import get_current_user
@@ -28,6 +29,30 @@ def get_notes(
         query = query.join(Note.tags).filter(Tag.name == tag)
 
     return query.all()
+
+
+@notes_router.get("/search", response_model=List[NoteResponse])
+def search_notes(
+    query: str,
+    skip: int = 0,
+    limit: int = 10,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+
+    notes = db.query(Note).filter(
+        Note.owner_id == current_user.id,
+        or_(
+            Note.title.ilike(f"%{query}%"),
+            Note.content.ilike(f"%{query}%"),
+            Note.tags.any(Tag.name.ilike(f"%{query}%"))
+        )
+    ).offset(skip).limit(limit).all()
+
+    if not notes:
+        raise HTTPException(status_code=404, detail="No notes found")
+
+    return notes
 
 
 @notes_router.get('/{note_id}', response_model=NoteResponse)
