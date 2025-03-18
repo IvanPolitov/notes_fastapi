@@ -13,3 +13,8 @@ notes_app/
 └── routers/         # Роутеры
     └── notes.py     # Эндпоинты для заметок
 ```
+
+# Запуск
+
+docker-compose build
+docker-compose up
